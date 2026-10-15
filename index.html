@@ -1,0 +1,1317 @@
+<!DOCTYPE html>
+<html lang="ro" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MateHub România - Platformă Gratuită de Matematică (Gimnaziu & Liceu)</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Supabase JS Client v2 CDN (Official Library) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- KaTeX CSS & JS for LaTeX Math rendering -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              500: '#0284c7',
+              600: '#0369a1',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* CSS Variables for Dynamic Themes */
+    :root {
+      --bg-base: #0f172a;
+      --bg-surface: #1e293b;
+      --bg-surface-hover: #334155;
+      --border-accent: #38bdf8;
+      --primary-color: #38bdf8;
+      --primary-glow: rgba(56, 189, 248, 0.25);
+      --secondary-color: #818cf8;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --card-bg: rgba(30, 41, 59, 0.7);
+      --badge-bg: rgba(56, 189, 248, 0.15);
+      --badge-text: #38bdf8;
+      --nav-bg: rgba(15, 23, 42, 0.85);
+    }
+
+    /* THEME: Gaming */
+    body.theme-gaming {
+      --bg-base: #09090e;
+      --bg-surface: #131226;
+      --bg-surface-hover: #1f1d3d;
+      --border-accent: #a855f7;
+      --primary-color: #ec4899;
+      --primary-glow: rgba(236, 72, 153, 0.35);
+      --secondary-color: #8b5cf6;
+      --text-main: #fdf4ff;
+      --text-muted: #a8a29e;
+      --card-bg: rgba(26, 21, 48, 0.75);
+      --badge-bg: rgba(168, 85, 247, 0.2);
+      --badge-text: #f472b6;
+      --nav-bg: rgba(10, 9, 16, 0.9);
+    }
+
+    /* THEME: Spațiu (Space) */
+    body.theme-space {
+      --bg-base: #050b14;
+      --bg-surface: #0c182c;
+      --bg-surface-hover: #142542;
+      --border-accent: #38bdf8;
+      --primary-color: #38bdf8;
+      --primary-glow: rgba(56, 189, 248, 0.3);
+      --secondary-color: #6366f1;
+      --text-main: #f0fdf4;
+      --text-muted: #7dd3fc;
+      --card-bg: rgba(12, 24, 44, 0.8);
+      --badge-bg: rgba(56, 189, 248, 0.18);
+      --badge-text: #38bdf8;
+      --nav-bg: rgba(5, 11, 20, 0.9);
+    }
+
+    /* THEME: Cyberpunk */
+    body.theme-cyberpunk {
+      --bg-base: #06080d;
+      --bg-surface: #0d121c;
+      --bg-surface-hover: #172033;
+      --border-accent: #facc15;
+      --primary-color: #facc15;
+      --primary-glow: rgba(250, 204, 21, 0.35);
+      --secondary-color: #06b6d4;
+      --text-main: #fef08a;
+      --text-muted: #94a3b8;
+      --card-bg: rgba(13, 18, 28, 0.85);
+      --badge-bg: rgba(250, 204, 21, 0.2);
+      --badge-text: #fde047;
+      --nav-bg: rgba(6, 8, 13, 0.92);
+    }
+
+    /* THEME: Minimal */
+    body.theme-minimal {
+      --bg-base: #090a0f;
+      --bg-surface: #14171f;
+      --bg-surface-hover: #202431;
+      --border-accent: #94a3b8;
+      --primary-color: #e2e8f0;
+      --primary-glow: rgba(255, 255, 255, 0.15);
+      --secondary-color: #64748b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --card-bg: rgba(20, 23, 31, 0.85);
+      --badge-bg: rgba(255, 255, 255, 0.1);
+      --badge-text: #e2e8f0;
+      --nav-bg: rgba(9, 10, 15, 0.92);
+    }
+
+    body {
+      background-color: var(--bg-base);
+      color: var(--text-main);
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .themed-surface {
+      background-color: var(--card-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      transition: all 0.25s ease;
+    }
+
+    .themed-surface:hover {
+      border-color: var(--border-accent);
+      box-shadow: 0 10px 25px -5px var(--primary-glow);
+    }
+
+    .themed-primary-text {
+      color: var(--primary-color);
+    }
+
+    .themed-btn {
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      color: #0f172a;
+      font-weight: 600;
+      transition: all 0.25s ease;
+    }
+    body.theme-minimal .themed-btn {
+      color: #050505;
+    }
+    .themed-btn:hover {
+      filter: brightness(1.15);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px var(--primary-glow);
+    }
+
+    .katex-display {
+      margin: 1.2em 0;
+      padding: 1rem;
+      background: rgba(0, 0, 0, 0.35);
+      border-radius: 0.75rem;
+      border-left: 3px solid var(--primary-color);
+      overflow-x: auto;
+    }
+
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--bg-base);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--bg-surface-hover);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--primary-color);
+    }
+
+    .glass-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+    }
+
+    /* Print styling */
+    @media print {
+      nav, #breadcrumbsBar, footer, .no-print, button {
+        display: none !important;
+      }
+      body {
+        background: white !important;
+        color: black !important;
+      }
+      .themed-surface, .glass-card {
+        border: 1px solid #ccc !important;
+        background: white !important;
+        color: black !important;
+        box-shadow: none !important;
+      }
+      .katex-display {
+        background: #f8fafc !important;
+        border-left: 3px solid #0284c7 !important;
+        color: black !important;
+      }
+      #worksheetModal {
+        position: static !important;
+        background: none !important;
+        padding: 0 !important;
+      }
+      #worksheetModal > div {
+        max-width: 100% !important;
+        border: none !important;
+        box-shadow: none !important;
+      }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans selection:bg-sky-500 selection:text-white theme-gaming">
+
+  <!-- ================= TOP NAVIGATION BAR (AIRY & MINIMALIST) ================= -->
+  <nav class="sticky top-0 z-50 backdrop-blur-xl border-b border-white/[0.08]" style="background-color: var(--nav-bg);">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16 sm:h-20 transition-all">
+        
+        <!-- Left: Clean Minimal Brand Logo -->
+        <div class="flex items-center gap-3 cursor-pointer select-none" onclick="navigateTo('home')">
+          <div class="w-9 h-9 rounded-xl flex items-center justify-center font-black text-base themed-btn shadow-md">
+            <i class="fa-solid fa-shapes"></i>
+          </div>
+          <span class="text-xl font-black tracking-tight text-white flex items-center gap-1.5">
+            Mate<span class="bg-gradient-to-r from-sky-400 via-indigo-400 to-pink-400 bg-clip-text text-transparent">Hub</span>
+          </span>
+        </div>
+
+        <!-- Center: Airy Navigation Links (Desktop) -->
+        <div class="hidden md:flex items-center gap-1 lg:gap-2">
+          <button onclick="navigateTo('home')" class="px-3.5 py-2 text-xs font-semibold text-gray-300 hover:text-white rounded-xl hover:bg-white/[0.06] transition-all">
+            Acasă
+          </button>
+          <button onclick="selectLevel('gimnaziu')" class="px-3.5 py-2 text-xs font-semibold text-gray-300 hover:text-white rounded-xl hover:bg-white/[0.06] transition-all">
+            Gimnaziu (V-VIII)
+          </button>
+          <button onclick="selectLevel('liceu')" class="px-3.5 py-2 text-xs font-semibold text-gray-300 hover:text-white rounded-xl hover:bg-white/[0.06] transition-all">
+            Liceu (IX-XII)
+          </button>
+          <button onclick="navigateTo('simulations')" class="px-3.5 py-2 text-xs font-semibold text-amber-300 hover:text-amber-200 rounded-xl hover:bg-amber-400/10 transition-all flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+            Simulări Examen
+          </button>
+        </div>
+
+        <!-- Right: Search Trigger, Unified Gamification Pill, Auth & Mobile Menu -->
+        <div class="flex items-center gap-2 sm:gap-3">
+          
+          <!-- Search Trigger (Spotlight / Palette style) -->
+          <button onclick="openSearchModal()" title="Caută lecții sau formule (Ctrl+K / ⌘K)" 
+                  class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-gray-400 hover:text-white text-xs transition">
+            <i class="fa-solid fa-magnifying-glass text-xs"></i>
+            <span class="hidden lg:inline text-[11px]">Caută...</span>
+            <kbd class="hidden lg:inline text-[9px] px-1.5 py-0.5 rounded bg-white/10 font-mono text-gray-400">⌘K</kbd>
+          </button>
+
+          <!-- Unified Gamification Badge (🔥 Streak & ⚡ XP joined together cleanly) -->
+          <button onclick="openProfileModal()" title="Streak-ul și XP-ul tău (Apasă pentru Realizări)"
+                  class="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-xs transition group">
+            <span class="flex items-center gap-1 text-orange-400 font-bold group-hover:scale-105 transition-transform">
+              <span class="text-xs">🔥</span> <span id="headerStreakVal">1</span>
+            </span>
+            <span class="w-px h-3 bg-white/15"></span>
+            <span class="flex items-center gap-1 text-amber-300 font-bold group-hover:scale-105 transition-transform">
+              <span class="text-xs" id="headerXpIcon">⚡</span> <span id="headerXpVal">0</span>
+            </span>
+          </button>
+
+          <!-- Auth & User Profile Container -->
+          <div id="authHeaderContainer" class="flex items-center gap-2">
+            <button onclick="openAuthModal('signin')" 
+                    class="px-3 py-1.5 text-xs font-semibold rounded-xl text-gray-300 hover:text-white hover:bg-white/[0.08] transition whitespace-nowrap flex items-center gap-1.5">
+              <i class="fa-regular fa-user text-[11px] text-gray-400"></i>
+              <span>Autentificare</span>
+            </button>
+            <button onclick="openAuthModal('signup')" 
+                    class="px-3.5 py-1.5 text-xs font-bold rounded-xl themed-btn text-black shadow-md hover:brightness-110 transition whitespace-nowrap flex items-center gap-1.5">
+              <i class="fa-solid fa-sparkles text-[10px]"></i>
+              <span>Cont Nou</span>
+            </button>
+          </div>
+
+          <!-- Quick Theme Switcher Button (Desktop) -->
+          <div class="relative hidden sm:block">
+            <button id="themeMenuBtn" onclick="toggleThemeDropdown()" title="Personalizează tema" 
+                    class="w-9 h-9 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-gray-300 hover:text-white flex items-center justify-center transition">
+              <i class="fa-solid fa-palette text-xs themed-primary-text"></i>
+            </button>
+            <div id="themeDropdownMenu" class="hidden absolute right-0 mt-2 w-44 glass-card rounded-2xl p-1.5 shadow-2xl z-50 border border-white/10">
+              <div class="px-2 py-1 text-[10px] uppercase font-bold text-gray-400">Stil Personalizat</div>
+              <button onclick="setTheme('theme-gaming', 'Gaming')" class="w-full text-left px-3 py-2 text-xs rounded-xl hover:bg-white/10 flex items-center gap-2.5 transition">
+                <span class="w-2.5 h-2.5 rounded-full bg-pink-500 shadow-sm shadow-pink-500"></span> Gaming
+              </button>
+              <button onclick="setTheme('theme-space', 'Spațiu')" class="w-full text-left px-3 py-2 text-xs rounded-xl hover:bg-white/10 flex items-center gap-2.5 transition">
+                <span class="w-2.5 h-2.5 rounded-full bg-cyan-400 shadow-sm shadow-cyan-400"></span> Spațiu
+              </button>
+              <button onclick="setTheme('theme-cyberpunk', 'Cyberpunk')" class="w-full text-left px-3 py-2 text-xs rounded-xl hover:bg-white/10 flex items-center gap-2.5 transition">
+                <span class="w-2.5 h-2.5 rounded-full bg-yellow-400 shadow-sm shadow-yellow-400"></span> Cyberpunk
+              </button>
+              <button onclick="setTheme('theme-minimal', 'Minimal')" class="w-full text-left px-3 py-2 text-xs rounded-xl hover:bg-white/10 flex items-center gap-2.5 transition">
+                <span class="w-2.5 h-2.5 rounded-full bg-slate-300 shadow-sm shadow-slate-300"></span> Minimal
+              </button>
+            </div>
+          </div>
+
+          <!-- Mobile Hamburger Toggle Button (Mobile) -->
+          <button onclick="toggleMobileMenu()" id="btnMobileToggle" title="Meniu" 
+                  class="md:hidden w-9 h-9 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-gray-300 hover:text-white flex items-center justify-center transition">
+            <i class="fa-solid fa-bars text-sm"></i>
+          </button>
+
+        </div>
+
+      </div>
+    </div>
+  </nav>
+
+  <!-- ================= MOBILE SLIDE-OVER DRAWER MENU ================= -->
+  <div id="mobileDrawerMenu" class="hidden fixed inset-0 z-50 md:hidden animate-fadeIn">
+    <!-- Backdrop -->
+    <div class="fixed inset-0 bg-black/75 backdrop-blur-md" onclick="toggleMobileMenu()"></div>
+
+    <!-- Drawer Content -->
+    <div class="fixed inset-y-0 right-0 max-w-xs w-full themed-surface border-l border-white/10 p-6 flex flex-col justify-between shadow-2xl z-10 overflow-y-auto">
+      
+      <div class="space-y-6">
+        <!-- Drawer Header -->
+        <div class="flex items-center justify-between pb-4 border-b border-white/10">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg themed-btn flex items-center justify-center font-bold text-xs text-black">
+              <i class="fa-solid fa-shapes"></i>
+            </div>
+            <span class="font-extrabold text-white text-base">MateHub</span>
+          </div>
+          <button onclick="toggleMobileMenu()" class="w-8 h-8 rounded-lg bg-white/5 text-gray-400 hover:text-white flex items-center justify-center">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <!-- Quick Search in Drawer -->
+        <div>
+          <button onclick="toggleMobileMenu(); openSearchModal();" class="w-full px-3.5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-gray-400 text-xs flex items-center gap-2.5 text-left">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <span>Caută lecții sau teoreme...</span>
+          </button>
+        </div>
+
+        <!-- Nav Links -->
+        <div class="space-y-1.5 text-xs font-semibold">
+          <div class="text-[10px] uppercase font-bold text-gray-500 tracking-wider px-2 py-1">Navigare</div>
+          <button onclick="navigateTo('home'); toggleMobileMenu();" class="w-full text-left px-3 py-2.5 rounded-xl hover:bg-white/10 text-gray-200 flex items-center gap-3 transition">
+            <i class="fa-solid fa-house text-gray-400 w-4"></i> Acasă
+          </button>
+          <button onclick="selectLevel('gimnaziu'); toggleMobileMenu();" class="w-full text-left px-3 py-2.5 rounded-xl hover:bg-white/10 text-gray-200 flex items-center gap-3 transition">
+            <i class="fa-solid fa-shapes text-sky-400 w-4"></i> Gimnaziu (V - VIII)
+          </button>
+          <button onclick="selectLevel('liceu'); toggleMobileMenu();" class="w-full text-left px-3 py-2.5 rounded-xl hover:bg-white/10 text-gray-200 flex items-center gap-3 transition">
+            <i class="fa-solid fa-infinity text-purple-400 w-4"></i> Liceu (IX - XII)
+          </button>
+          <button onclick="navigateTo('simulations'); toggleMobileMenu();" class="w-full text-left px-3 py-2.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 flex items-center gap-3 transition border border-amber-500/20 font-bold">
+            <i class="fa-solid fa-stopwatch text-amber-400 w-4"></i> Simulări Examen (EN & BAC)
+          </button>
+          <button onclick="openProfileModal(); toggleMobileMenu();" class="w-full text-left px-3 py-2.5 rounded-xl hover:bg-white/10 text-gray-200 flex items-center gap-3 transition">
+            <i class="fa-solid fa-award text-yellow-400 w-4"></i> Profil & Insigne Deblocate
+          </button>
+        </div>
+
+        <!-- Themes Picker in Drawer -->
+        <div class="space-y-2 pt-2 border-t border-white/10">
+          <div class="text-[10px] uppercase font-bold text-gray-500 tracking-wider px-2">Alege Tema Vizuală</div>
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <button onclick="setTheme('theme-gaming', 'Gaming'); toggleMobileMenu();" class="p-2 rounded-xl bg-white/5 border border-white/10 flex items-center gap-2 text-gray-200 hover:bg-white/10">
+              <span class="w-2.5 h-2.5 rounded-full bg-pink-500"></span> Gaming
+            </button>
+            <button onclick="setTheme('theme-space', 'Spațiu'); toggleMobileMenu();" class="p-2 rounded-xl bg-white/5 border border-white/10 flex items-center gap-2 text-gray-200 hover:bg-white/10">
+              <span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span> Spațiu
+            </button>
+            <button onclick="setTheme('theme-cyberpunk', 'Cyberpunk'); toggleMobileMenu();" class="p-2 rounded-xl bg-white/5 border border-white/10 flex items-center gap-2 text-gray-200 hover:bg-white/10">
+              <span class="w-2.5 h-2.5 rounded-full bg-yellow-400"></span> Cyberpunk
+            </button>
+            <button onclick="setTheme('theme-minimal', 'Minimal'); toggleMobileMenu();" class="p-2 rounded-xl bg-white/5 border border-white/10 flex items-center gap-2 text-gray-200 hover:bg-white/10">
+              <span class="w-2.5 h-2.5 rounded-full bg-slate-300"></span> Minimal
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Drawer Footer Auth Actions -->
+      <div id="mobileDrawerAuth" class="pt-6 border-t border-white/10 space-y-2">
+        <div class="space-y-2">
+          <button onclick="toggleMobileMenu(); openAuthModal('signin');" 
+                  class="w-full py-2.5 px-4 rounded-xl text-center text-xs font-semibold text-gray-200 bg-white/5 hover:bg-white/10 border border-white/10 transition flex items-center justify-center gap-2">
+            <i class="fa-regular fa-user text-xs"></i>
+            <span>Autentificare</span>
+          </button>
+          <button onclick="toggleMobileMenu(); openAuthModal('signup');" 
+                  class="w-full py-2.5 px-4 rounded-xl text-center text-xs font-bold themed-btn text-black shadow transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-sparkles text-xs"></i>
+            <span>Creează Cont Nou</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================= MODERN SPOTLIGHT SEARCH MODAL (CMD+K) ================= -->
+  <div id="spotlightSearchModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-md p-4 sm:p-6 flex items-start justify-center pt-16 sm:pt-24 animate-fadeIn">
+    <div class="themed-surface rounded-3xl w-full max-w-xl border border-white/15 overflow-hidden shadow-2xl space-y-3 p-5">
+      
+      <!-- Search Input Box -->
+      <div class="relative flex items-center border-b border-white/10 pb-3">
+        <i class="fa-solid fa-magnifying-glass text-gray-400 ml-2 mr-3 text-base"></i>
+        <input type="text" id="spotlightSearchInput" placeholder="Caută orice lecție, teoremă, capitol..."
+               oninput="handleSearch(this.value)"
+               class="w-full bg-transparent text-sm sm:text-base text-white placeholder-gray-500 focus:outline-none">
+        <button onclick="closeSearchModal()" class="text-xs text-gray-400 hover:text-white px-2.5 py-1 rounded-lg bg-white/5 transition">
+          ESC
+        </button>
+      </div>
+
+      <!-- Quick Results Area -->
+      <div id="spotlightResultsContainer" class="max-h-80 overflow-y-auto divide-y divide-white/5 space-y-1">
+        <div class="p-4 text-center text-xs text-gray-400">
+          Tastează un cuvânt cheie (ex: <em>Pitagora</em>, <em>Derivată</em>, <em>Logaritm</em>, <em>Cilindru</em>)...
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================= BREADCRUMBS & CONTEXT BAR ================= -->
+  <div id="breadcrumbsBar" class="hidden border-b border-white/5 py-2.5 text-xs text-gray-400" style="background-color: rgba(0,0,0,0.2);">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+      <div id="breadcrumbItems" class="flex items-center gap-2 flex-wrap"></div>
+      <button onclick="goBack()" class="px-2.5 py-1 rounded bg-white/5 hover:bg-white/10 text-gray-300 flex items-center gap-1.5 transition text-[11px]">
+        <i class="fa-solid fa-arrow-left"></i> Înapoi
+      </button>
+    </div>
+  </div>
+
+  <!-- ================= MAIN CONTENT CONTAINER ================= -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+    <!-- VIEW 1: HOME SCREEN -->
+    <section id="viewHome" class="space-y-12">
+      
+      <!-- Hero Banner -->
+      <div class="text-center max-w-3xl mx-auto pt-4 pb-2 space-y-4">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold" style="background-color: var(--badge-bg); color: var(--badge-text);">
+          <i class="fa-solid fa-award"></i> Conform Programei Oficiale MEN 2024–2026
+        </div>
+        <h1 class="text-4xl sm:text-5xl font-black tracking-tight leading-tight">
+          Învață Matematica <span class="bg-gradient-to-r from-sky-400 via-indigo-400 to-pink-500 bg-clip-text text-transparent">Fără Stres</span>
+        </h1>
+        <p class="text-gray-300 text-base sm:text-lg leading-relaxed">
+          Explicații intuitive pas cu pas, formule matematice randeate impecabil și exemple rezolvate pentru examenele de 
+          <span class="text-white font-medium">Evaluare Națională</span> și <span class="text-white font-medium">Bacalaureat</span>.
+        </p>
+
+        <!-- Quick badges -->
+        <div class="flex flex-wrap items-center justify-center gap-3 pt-2 text-xs text-gray-400">
+          <span class="flex items-center gap-1.5 bg-white/5 px-3 py-1.5 rounded-lg border border-white/5">
+            <i class="fa-solid fa-check text-green-400"></i> 100% Gratuit
+          </span>
+          <span class="flex items-center gap-1.5 bg-white/5 px-3 py-1.5 rounded-lg border border-white/5">
+            <i class="fa-solid fa-square-root-variable text-sky-400"></i> Rulare KaTeX Live
+          </span>
+          <span class="flex items-center gap-1.5 bg-white/5 px-3 py-1.5 rounded-lg border border-white/5">
+            <i class="fa-solid fa-file-pen text-amber-400"></i> Generator Fișe de Lucru
+          </span>
+          <span class="flex items-center gap-1.5 bg-white/5 px-3 py-1.5 rounded-lg border border-white/5">
+            <i class="fa-solid fa-stopwatch text-purple-400"></i> Simulări cu Barem Oficial
+          </span>
+        </div>
+      </div>
+
+      <!-- LEVEL SELECTION CARDS: Gimnaziu vs Liceu -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+        
+        <!-- CARD GIMNAZIU -->
+        <div onclick="selectLevel('gimnaziu')" 
+             class="group relative themed-surface rounded-2xl p-8 cursor-pointer transform hover:-translate-y-1 transition duration-300 flex flex-col justify-between overflow-hidden">
+          <div class="absolute -top-12 -right-12 w-40 h-40 rounded-full blur-3xl opacity-20 pointer-events-none" style="background-color: var(--primary-color);"></div>
+          
+          <div class="space-y-4">
+            <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl font-bold bg-white/5 text-sky-400 border border-white/10 group-hover:scale-110 transition duration-300">
+              <i class="fa-solid fa-shapes"></i>
+            </div>
+            
+            <div>
+              <span class="text-xs font-bold uppercase tracking-wider text-sky-400">Ciclul Gimnazial</span>
+              <h2 class="text-2xl font-extrabold text-white mt-1 group-hover:themed-primary-text transition">Gimnaziu</h2>
+              <p class="text-sm text-gray-400 mt-2 leading-relaxed">
+                Clasele V – VIII. Bazele aritmeticii, geometriei plane și în spațiu, calcul algebric și pregătire completă pentru 
+                <strong class="text-gray-200">Evaluarea Națională</strong>.
+              </p>
+            </div>
+
+            <!-- Grade Badges preview -->
+            <div class="flex flex-wrap gap-2 pt-2">
+              <span class="px-2.5 py-1 text-xs rounded-md bg-white/5 border border-white/10 text-gray-300 font-medium">Clasa a V-a</span>
+              <span class="px-2.5 py-1 text-xs rounded-md bg-white/5 border border-white/10 text-gray-300 font-medium">Clasa a VI-a</span>
+              <span class="px-2.5 py-1 text-xs rounded-md bg-white/5 border border-white/10 text-gray-300 font-medium">Clasa a VII-a</span>
+              <span class="px-2.5 py-1 text-xs rounded-md bg-sky-500/20 border border-sky-500/40 text-sky-300 font-semibold">Clasa a VIII-a (EN)</span>
+            </div>
+          </div>
+
+          <div class="mt-8 pt-4 border-t border-white/10 flex items-center justify-between text-sm font-semibold themed-primary-text">
+            <span>Explorează Clasele V – VIII</span>
+            <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition"></i>
+          </div>
+        </div>
+
+        <!-- CARD LICEU -->
+        <div onclick="selectLevel('liceu')" 
+             class="group relative themed-surface rounded-2xl p-8 cursor-pointer transform hover:-translate-y-1 transition duration-300 flex flex-col justify-between overflow-hidden">
+          <div class="absolute -top-12 -right-12 w-40 h-40 rounded-full blur-3xl opacity-20 pointer-events-none" style="background-color: var(--secondary-color);"></div>
+
+          <div class="space-y-4">
+            <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl font-bold bg-white/5 text-purple-400 border border-white/10 group-hover:scale-110 transition duration-300">
+              <i class="fa-solid fa-infinity"></i>
+            </div>
+
+            <div>
+              <span class="text-xs font-bold uppercase tracking-wider text-purple-400">Ciclul Liceal</span>
+              <h2 class="text-2xl font-extrabold text-white mt-1 group-hover:themed-primary-text transition">Liceu</h2>
+              <p class="text-sm text-gray-400 mt-2 leading-relaxed">
+                Clasele IX – XII. Funcții, trigonometrie, analiză matematică, algebră liniară și structuri algebrice pentru 
+                <strong class="text-gray-200">Examenul de Bacalaureat (M1 / M2)</strong>.
+              </p>
+            </div>
+
+            <!-- Grade Badges preview -->
+            <div class="flex flex-wrap gap-2 pt-2">
+              <span class="px-2.5 py-1 text-xs rounded-md bg-white/5 border border-white/10 text-gray-300 font-medium">Clasa a IX-a</span>
+              <span class="px-2.5 py-1 text-xs rounded-md bg-white/5 border border-white/10 text-gray-300 font-medium">Clasa a X-a</span>
+              <span class="px-2.5 py-1 text-xs rounded-md bg-white/5 border border-white/10 text-gray-300 font-medium">Clasa a XI-a</span>
+              <span class="px-2.5 py-1 text-xs rounded-md bg-purple-500/20 border border-purple-500/40 text-purple-300 font-semibold">Clasa a XII-a (BAC)</span>
+            </div>
+          </div>
+
+          <div class="mt-8 pt-4 border-t border-white/10 flex items-center justify-between text-sm font-semibold themed-primary-text">
+            <span>Explorează Clasele IX – XII</span>
+            <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition"></i>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- EXAM SIMULATION PROMO BANNER -->
+      <div class="max-w-4xl mx-auto rounded-2xl p-6 sm:p-8 bg-gradient-to-r from-amber-500/10 via-purple-500/10 to-sky-500/10 border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+        <div class="space-y-2">
+          <div class="flex items-center gap-2">
+            <span class="text-xs uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40">Modul Nou</span>
+            <span class="text-xs text-gray-400"><i class="fa-solid fa-stopwatch"></i> Cu cronometru și barem oficial</span>
+          </div>
+          <h3 class="text-2xl font-black text-white">Simulări Oficiale de Examen</h3>
+          <p class="text-sm text-gray-300 max-w-xl">
+            Testează-ți cunoștințele în condiții reale de examen (Evaluare Națională sau Bacalaureat). La final primești nota estimată și recomandări punctuale de lecții pentru a recupera materia!
+          </p>
+        </div>
+        <button onclick="navigateTo('simulations')" class="px-6 py-3 rounded-xl themed-btn text-sm font-bold flex items-center justify-center gap-2 whitespace-nowrap shadow-lg">
+          <i class="fa-solid fa-play text-xs"></i> <span>Începe o Simulare</span>
+        </button>
+      </div>
+
+    </section>
+
+
+    <!-- VIEW 2: CLASS SELECTION SCREEN (Afișare Clase Gimnaziu / Liceu) -->
+    <section id="viewClassSelect" class="hidden space-y-8 animate-fadeIn">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/10">
+        <div>
+          <span id="levelBadge" class="text-xs uppercase font-bold tracking-wider px-2.5 py-1 rounded-full" style="background-color: var(--badge-bg); color: var(--badge-text);">Gimnaziu</span>
+          <h2 id="levelTitle" class="text-3xl font-extrabold text-white mt-1">Alege Clasa</h2>
+          <p id="levelSubtitle" class="text-sm text-gray-400 mt-1">Selectează clasa pentru a parcurge capitolele și lecțiile din programa școlară.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="selectLevel('gimnaziu')" id="btnTabGimnaziu" class="px-4 py-2 text-xs font-bold rounded-lg border border-white/10 transition">Gimnaziu (V-VIII)</button>
+          <button onclick="selectLevel('liceu')" id="btnTabLiceu" class="px-4 py-2 text-xs font-bold rounded-lg border border-white/10 transition">Liceu (IX-XII)</button>
+        </div>
+      </div>
+
+      <div id="classesGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"></div>
+    </section>
+
+
+    <!-- VIEW 3: CURRICULUM CHAPTERS & LESSONS VIEW -->
+    <section id="viewCurriculum" class="hidden space-y-8 animate-fadeIn">
+      <div class="themed-surface rounded-2xl p-6 sm:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 border border-white/10">
+        <div class="space-y-2">
+          <div class="flex items-center gap-2">
+            <span id="curriculumGradeBadge" class="text-xs uppercase font-bold tracking-wider px-2.5 py-1 rounded-full" style="background-color: var(--badge-bg); color: var(--badge-text);">Clasa a VIII-a</span>
+            <span id="curriculumExamBadge" class="hidden text-xs uppercase font-bold tracking-wider px-2.5 py-1 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30">Examen Național</span>
+          </div>
+          <h2 id="curriculumClassTitle" class="text-2xl sm:text-3xl font-black text-white">Programa Matematică</h2>
+          <p id="curriculumClassDesc" class="text-sm text-gray-300 max-w-2xl leading-relaxed">
+            Capitolele oficiale structurate logic. Alege o lecție pentru a accesa teoria completă, exemplele pas cu pas și generatorul de fișe.
+          </p>
+        </div>
+        <div class="flex items-center gap-4 bg-white/5 p-4 rounded-xl border border-white/10 self-start md:self-auto">
+          <div class="text-center">
+            <div id="curriculumTotalChapters" class="text-2xl font-black themed-primary-text">0</div>
+            <div class="text-[11px] uppercase tracking-wider text-gray-400">Capitole</div>
+          </div>
+          <div class="w-px h-8 bg-white/10"></div>
+          <div class="text-center">
+            <div id="curriculumTotalLessons" class="text-2xl font-black text-white">0</div>
+            <div class="text-[11px] uppercase tracking-wider text-gray-400">Lecții</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="chaptersContainer" class="space-y-5"></div>
+    </section>
+
+
+    <!-- VIEW 4: DEDICATED THEORY & FORMULA VIEWER -->
+    <section id="viewTheory" class="hidden space-y-8 animate-fadeIn">
+      
+      <!-- Theory Header -->
+      <div class="themed-surface rounded-2xl p-6 sm:p-8 border border-white/10 space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+          <div class="flex items-center gap-2">
+            <span id="theoryChapterBadge" class="text-xs uppercase font-bold tracking-wider px-2.5 py-1 rounded-full bg-white/5 text-gray-300 border border-white/10">Capitol</span>
+            <span id="theoryClassBadge" class="text-xs uppercase font-bold tracking-wider px-2.5 py-1 rounded-full" style="background-color: var(--badge-bg); color: var(--badge-text);">Clasa a VIII-a</span>
+            <span id="theoryTimeBadge" class="text-xs text-gray-400 flex items-center gap-1"><i class="fa-regular fa-clock"></i> 15 min studiu</span>
+          </div>
+          <div class="flex items-center gap-2.5 flex-wrap">
+            <!-- Dedicated Button: Generează Fișă de Lucru -->
+            <button onclick="openWorksheetModal()" id="btnHeaderGenerateWorksheet" class="px-3.5 py-1.5 text-xs font-bold rounded-lg themed-btn flex items-center gap-1.5 shadow-md">
+              <i class="fa-solid fa-file-pen"></i> <span>Generează Fișă de Lucru</span>
+            </button>
+            <button onclick="toggleCompletedLesson()" id="btnMarkCompleted" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 flex items-center gap-1.5 transition">
+              <i class="fa-regular fa-circle-check"></i> <span>Marchează ca învățat</span>
+            </button>
+            <button onclick="window.print()" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 flex items-center gap-1.5 transition" title="Printează teoria">
+              <i class="fa-solid fa-print"></i>
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <h1 id="theoryLessonTitle" class="text-3xl sm:text-4xl font-black text-white">Titlu Lecție</h1>
+          <p id="theoryLessonSummary" class="text-sm sm:text-base text-gray-300 mt-2 leading-relaxed">Scurtă descriere a conceptului studiat.</p>
+        </div>
+      </div>
+
+      <!-- Theory Body (Structured content with KaTeX) -->
+      <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        
+        <!-- Main Theory Column (3 cols) -->
+        <div class="lg:col-span-3 space-y-8" id="theoryContentContainer"></div>
+
+        <!-- Sidebar (1 col): Navigation & Worksheet Quick Trigger -->
+        <div class="space-y-6">
+          
+          <!-- Generator Card in Sidebar -->
+          <div class="p-5 rounded-2xl bg-gradient-to-br from-sky-500/10 via-purple-500/10 to-pink-500/10 border border-sky-500/30 space-y-3">
+            <div class="flex items-center gap-2 text-sky-400 text-xs font-bold uppercase tracking-wider">
+              <i class="fa-solid fa-wand-magic-sparkles"></i> Practică Imediată
+            </div>
+            <h4 class="text-sm font-bold text-white">Vrei să exersezi această lecție?</h4>
+            <p class="text-xs text-gray-300 leading-relaxed">
+              Generează o fișă de lucru cu 5 probleme pe 3 niveluri de dificultate, cu barem și rezolvări complete.
+            </p>
+            <button onclick="openWorksheetModal()" class="w-full py-2.5 rounded-xl themed-btn text-xs font-bold flex items-center justify-center gap-1.5 shadow">
+              <i class="fa-solid fa-file-pen text-xs"></i> Deschide Fișa de Lucru
+            </button>
+          </div>
+
+          <!-- Mini Checklist / Navigation in lesson -->
+          <div class="themed-surface rounded-xl p-5 border border-white/10 sticky top-20 space-y-4">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400">Navigare în lecție</h3>
+            <ul class="text-xs space-y-2.5 text-gray-300">
+              <li><a href="#sec-intro" class="hover:themed-primary-text flex items-center gap-2"><i class="fa-solid fa-angle-right text-[10px]"></i> 1. Concept & Definiție</a></li>
+              <li><a href="#sec-formulas" class="hover:themed-primary-text flex items-center gap-2"><i class="fa-solid fa-angle-right text-[10px]"></i> 2. Formule & Teoreme Cheie</a></li>
+              <li><a href="#sec-examples" class="hover:themed-primary-text flex items-center gap-2"><i class="fa-solid fa-angle-right text-[10px]"></i> 3. Exemple Rezolvate Pas cu Pas</a></li>
+              <li><a href="#sec-traps" class="hover:themed-primary-text flex items-center gap-2"><i class="fa-solid fa-angle-right text-[10px]"></i> 4. Capcane Frecvente la Teste</a></li>
+              <li><a href="#sec-quiz" class="hover:themed-primary-text flex items-center gap-2"><i class="fa-solid fa-angle-right text-[10px]"></i> 5. Test Rapid de Înțelegere</a></li>
+            </ul>
+
+            <div class="pt-4 border-t border-white/10 space-y-3">
+              <span class="text-xs font-bold uppercase tracking-wider text-gray-400">Navigare între lecții</span>
+              <div class="flex items-center gap-2">
+                <button id="btnPrevLesson" onclick="goToAdjacentLesson(-1)" class="flex-1 px-3 py-2 text-xs rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 font-medium transition flex items-center justify-center gap-1.5">
+                  <i class="fa-solid fa-arrow-left text-[10px]"></i> Anterior
+                </button>
+                <button id="btnNextLesson" onclick="goToAdjacentLesson(1)" class="flex-1 px-3 py-2 text-xs rounded-lg themed-btn font-medium transition flex items-center justify-center gap-1.5">
+                  Următor <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- VIEW 5: EXAM SIMULATIONS SECTION (Simulare EN & BAC) -->
+    <section id="viewSimulations" class="hidden space-y-8 animate-fadeIn">
+      
+      <!-- SUB-SCREEN 5A: SELECT SIMULATION TYPE -->
+      <div id="simScreenSelect" class="space-y-8">
+        
+        <div class="text-center max-w-2xl mx-auto space-y-3">
+          <span class="text-xs uppercase font-bold tracking-wider px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
+            <i class="fa-solid fa-stopwatch-20"></i> Centrul de Testare Oficială
+          </span>
+          <h2 class="text-3xl sm:text-4xl font-black text-white">Simulări de Examen</h2>
+          <p class="text-sm text-gray-300 leading-relaxed">
+            Alege tipul de examen pe care îl pregătești. Fiecare simulare respectă structura oficială a Ministerului Educației, include cronometru vizual și barem complet cu recomandări de învățare.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          
+          <!-- SIMULATION CARD 1: EVALUARE NAȚIONALĂ -->
+          <div class="themed-surface rounded-2xl p-7 border border-white/10 flex flex-col justify-between space-y-6 hover:border-sky-400 transition group">
+            <div class="space-y-4">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-sky-500/20 text-sky-300 border border-sky-500/30">Clasa a VIII-a</span>
+                <span class="text-xs text-gray-400 flex items-center gap-1.5"><i class="fa-regular fa-clock"></i> 120 minute (2 ore)</span>
+              </div>
+              <h3 class="text-2xl font-extrabold text-white group-hover:themed-primary-text transition">Simulare Evaluare Națională</h3>
+              <p class="text-xs sm:text-sm text-gray-300 leading-relaxed">
+                Subiectele I, II și III conform modelului oficial MEN:
+              </p>
+              <ul class="text-xs text-gray-300 space-y-1.5">
+                <li class="flex items-center gap-2"><i class="fa-solid fa-check text-sky-400 text-[10px]"></i> <strong>Subiectul I (30 pct):</strong> 6 itemi grilă de algebră & aritmetică</li>
+                <li class="flex items-center gap-2"><i class="fa-solid fa-check text-sky-400 text-[10px]"></i> <strong>Subiectul II (30 pct):</strong> 6 itemi de geometrie plană și în spațiu</li>
+                <li class="flex items-center gap-2"><i class="fa-solid fa-check text-sky-400 text-[10px]"></i> <strong>Subiectul III (30 pct):</strong> 6 probleme complexe cu redactare completă</li>
+                <li class="flex items-center gap-2 text-gray-400"><i class="fa-solid fa-plus text-green-400 text-[10px]"></i> 10 puncte din oficiu (Total: 100 pct / Nota 10)</li>
+              </ul>
+            </div>
+
+            <button onclick="startExamSimulation('en')" class="w-full py-3 rounded-xl themed-btn text-sm font-bold flex items-center justify-center gap-2 shadow-lg">
+              <i class="fa-solid fa-play"></i> Începe Simularea Evaluare Națională
+            </button>
+          </div>
+
+          <!-- SIMULATION CARD 2: BACALAUREAT -->
+          <div class="themed-surface rounded-2xl p-7 border border-white/10 flex flex-col justify-between space-y-6 hover:border-purple-400 transition group">
+            <div class="space-y-4">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">Clasa a XII-a</span>
+                <span class="text-xs text-gray-400 flex items-center gap-1.5"><i class="fa-regular fa-clock"></i> 180 minute (3 ore)</span>
+              </div>
+              <h3 class="text-2xl font-extrabold text-white group-hover:themed-primary-text transition">Simulare Bacalaureat Matematică</h3>
+              <p class="text-xs sm:text-sm text-gray-300 leading-relaxed">
+                Structura oficială M1 / M2 profil Real & Tehnologic:
+              </p>
+              <ul class="text-xs text-gray-300 space-y-1.5">
+                <li class="flex items-center gap-2"><i class="fa-solid fa-check text-purple-400 text-[10px]"></i> <strong>Subiectul I (30 pct):</strong> 6 exerciții din materia claselor IX-X</li>
+                <li class="flex items-center gap-2"><i class="fa-solid fa-check text-purple-400 text-[10px]"></i> <strong>Subiectul II (30 pct):</strong> Matrice & Legi de compoziție (XI-XII)</li>
+                <li class="flex items-center gap-2"><i class="fa-solid fa-check text-purple-400 text-[10px]"></i> <strong>Subiectul III (30 pct):</strong> Analiză matematică (Derivate & Integrale)</li>
+                <li class="flex items-center gap-2 text-gray-400"><i class="fa-solid fa-plus text-green-400 text-[10px]"></i> 10 puncte din oficiu (Total: 100 pct / Nota 10)</li>
+              </ul>
+            </div>
+
+            <button onclick="startExamSimulation('bac')" class="w-full py-3 rounded-xl themed-btn text-sm font-bold flex items-center justify-center gap-2 shadow-lg">
+              <i class="fa-solid fa-play"></i> Începe Simularea Bacalaureat
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- SUB-SCREEN 5B: ACTIVE EXAM SCREEN (CRONOMETRU & SUBIECTE) -->
+      <div id="simScreenActive" class="hidden space-y-6">
+        
+        <!-- Exam Header with Timer -->
+        <div class="themed-surface rounded-2xl p-5 sm:p-6 border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-4 sticky top-16 z-40 shadow-2xl backdrop-blur-xl">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center justify-center text-lg font-bold">
+              <i class="fa-solid fa-file-signature"></i>
+            </div>
+            <div>
+              <h3 id="activeExamTitle" class="text-lg sm:text-xl font-bold text-white">Simulare Examen</h3>
+              <p id="activeExamSubtitle" class="text-xs text-gray-400">Structura oficială MEN • Toate subiectele sunt obligatorii</p>
+            </div>
+          </div>
+
+          <!-- Cronometru vizual activ -->
+          <div class="flex items-center gap-3 bg-black/40 px-4 py-2 rounded-xl border border-white/10">
+            <div class="text-right">
+              <div class="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Timp Rămas</div>
+              <div id="examTimerDisplay" class="text-2xl sm:text-3xl font-mono font-black text-amber-400">03:00:00</div>
+            </div>
+            <button onclick="toggleExamTimerPause()" id="btnPauseTimer" class="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 text-xs transition" title="Pauză / Reia cronometru">
+              <i class="fa-solid fa-pause"></i>
+            </button>
+          </div>
+
+          <!-- Finalize Button -->
+          <button onclick="confirmFinishExam()" class="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-black font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg transition">
+            <i class="fa-solid fa-flag-checkered"></i> <span>Predă Lucrarea</span>
+          </button>
+        </div>
+
+        <!-- Subjects Navigation Tabs -->
+        <div class="flex items-center gap-2 border-b border-white/10 pb-2 overflow-x-auto">
+          <button onclick="switchExamTab(1)" id="tabExamSub1" class="px-4 py-2 rounded-lg text-xs font-bold themed-btn transition whitespace-nowrap">
+            Subiectul I (30 pct)
+          </button>
+          <button onclick="switchExamTab(2)" id="tabExamSub2" class="px-4 py-2 rounded-lg text-xs font-bold bg-white/5 hover:bg-white/10 text-gray-300 transition whitespace-nowrap">
+            Subiectul II (30 pct)
+          </button>
+          <button onclick="switchExamTab(3)" id="tabExamSub3" class="px-4 py-2 rounded-lg text-xs font-bold bg-white/5 hover:bg-white/10 text-gray-300 transition whitespace-nowrap">
+            Subiectul III (30 pct)
+          </button>
+        </div>
+
+        <!-- Subject Content Container -->
+        <div id="examSubjectContent" class="space-y-6"></div>
+
+      </div>
+
+      <!-- SUB-SCREEN 5C: EVALUATION & REPORT SCREEN (NOTA ESTIMATIVĂ & LECȚII DE REPETAT) -->
+      <div id="simScreenResult" class="hidden space-y-8 animate-fadeIn">
+        
+        <!-- Score Hero Card -->
+        <div class="themed-surface rounded-2xl p-6 sm:p-10 border border-white/10 text-center space-y-6 max-w-3xl mx-auto">
+          <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+            <i class="fa-solid fa-circle-check"></i> Lucrare Evaluată cu Succes
+          </div>
+
+          <div>
+            <span class="text-xs uppercase font-bold tracking-widest text-gray-400">Nota Estimativă Finală</span>
+            <div id="resultFinalGrade" class="text-6xl sm:text-7xl font-black bg-gradient-to-r from-emerald-400 via-sky-400 to-indigo-400 bg-clip-text text-transparent my-2">
+              9.20
+            </div>
+            <p id="resultStatusText" class="text-sm sm:text-base font-semibold text-gray-200">Felicitări! Ai demonstrat o pregătire solidă.</p>
+          </div>
+
+          <!-- Points Breakdown -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-white/10 text-xs">
+            <div class="p-3 rounded-xl bg-white/5 border border-white/5">
+              <div class="text-gray-400">Subiectul I</div>
+              <div id="resSub1Score" class="text-lg font-bold text-white mt-0.5">25 / 30p</div>
+            </div>
+            <div class="p-3 rounded-xl bg-white/5 border border-white/5">
+              <div class="text-gray-400">Subiectul II</div>
+              <div id="resSub2Score" class="text-lg font-bold text-white mt-0.5">28 / 30p</div>
+            </div>
+            <div class="p-3 rounded-xl bg-white/5 border border-white/5">
+              <div class="text-gray-400">Subiectul III</div>
+              <div id="resSub3Score" class="text-lg font-bold text-white mt-0.5">29 / 30p</div>
+            </div>
+            <div class="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+              <div class="text-emerald-300">Oficiu</div>
+              <div class="text-lg font-bold text-emerald-400 mt-0.5">10 / 10p</div>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center justify-center gap-3 pt-2">
+            <button onclick="startExamSimulation(currentExamType)" class="px-4 py-2 rounded-xl themed-btn text-xs font-bold flex items-center gap-2">
+              <i class="fa-solid fa-rotate-right"></i> Reîncearcă o altă variantă
+            </button>
+            <button onclick="navigateTo('simulations')" class="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 text-xs font-semibold border border-white/10 flex items-center gap-2 transition">
+              <i class="fa-solid fa-arrow-left"></i> Alege alt examen
+            </button>
+          </div>
+        </div>
+
+        <!-- RECOMANDĂRI PERSONALIZATE DE LECȚII -->
+        <div id="resultRecommendationsSection" class="themed-surface rounded-2xl p-6 sm:p-8 border border-white/10 space-y-5 max-w-4xl mx-auto">
+          <div class="flex items-center gap-3 text-amber-400">
+            <i class="fa-solid fa-book-bookmark text-xl"></i>
+            <div>
+              <h3 class="text-lg font-bold text-white">Plan de Recuperare: Lecții Recomandate de Repetat</h3>
+              <p class="text-xs text-gray-400">Pe baza răspunsurilor din această simulare, iată conceptele pe care îți recomandăm să le aprofundezi:</p>
+            </div>
+          </div>
+
+          <div id="resultRecommendationsList" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+        </div>
+
+        <!-- BAREM COMPLET ȘI REZOLVARE DETALIATĂ -->
+        <div class="themed-surface rounded-2xl p-6 sm:p-8 border border-white/10 space-y-6 max-w-4xl mx-auto">
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-list-check text-sky-400"></i> Barem Oficial și Rezolvări Complete
+            </h3>
+            <button onclick="toggleAllSolutionsExam()" id="btnToggleAllExamSol" class="text-xs text-sky-400 hover:text-sky-300 font-semibold transition">
+              Deschide toate rezolvările
+            </button>
+          </div>
+
+          <div id="resultBaremContainer" class="space-y-4"></div>
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ================= MODAL: GENERATOR DE FIȘE DE LUCRU ================= -->
+  <div id="worksheetModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-md p-4 sm:p-6 flex items-center justify-center animate-fadeIn">
+    <div class="themed-surface rounded-2xl w-full max-w-4xl border border-white/15 max-h-[92vh] flex flex-col overflow-hidden shadow-2xl">
+      
+      <!-- Modal Header -->
+      <div class="p-5 sm:p-6 border-b border-white/10 flex items-center justify-between bg-white/[0.02]">
+        <div class="space-y-1">
+          <div class="flex items-center gap-2">
+            <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-500/30">Fișă de Lucru Interactivă</span>
+            <span id="wsLessonClassBadge" class="text-[10px] text-gray-400">Clasă</span>
+          </div>
+          <h2 id="wsLessonTitle" class="text-xl sm:text-2xl font-black text-white">Titlu Lecție</h2>
+        </div>
+
+        <button onclick="closeWorksheetModal()" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white flex items-center justify-center transition">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <!-- Difficulty Controls & Actions Toolbar -->
+      <div class="px-5 sm:px-6 py-4 border-b border-white/5 bg-black/20 flex flex-wrap items-center justify-between gap-4">
+        
+        <!-- Difficulty Picker -->
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-bold text-gray-400">Dificultate:</span>
+          <div class="flex items-center p-1 rounded-xl bg-white/5 border border-white/10 text-xs">
+            <button onclick="setWorksheetDifficulty('usor')" id="wsBtnUsor" class="px-3 py-1 rounded-lg font-bold transition">Ușor</button>
+            <button onclick="setWorksheetDifficulty('mediu')" id="wsBtnMediu" class="px-3 py-1 rounded-lg font-bold transition">Mediu</button>
+            <button onclick="setWorksheetDifficulty('avansat')" id="wsBtnAvansat" class="px-3 py-1 rounded-lg font-bold transition">Avansat</button>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex items-center gap-2">
+          <button onclick="toggleAllWorksheetSolutions()" id="btnToggleAllWs" class="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 text-xs font-medium border border-white/10 transition flex items-center gap-1.5">
+            <i class="fa-regular fa-eye"></i> <span>Arată toate rezolvările</span>
+          </button>
+          <button onclick="window.print()" class="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 text-xs font-medium border border-white/10 transition flex items-center gap-1.5">
+            <i class="fa-solid fa-print"></i> <span>Printează Fișa (PDF)</span>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Modal Body (5 Generated Problems) -->
+      <div class="p-5 sm:p-6 overflow-y-auto space-y-6 flex-1" id="wsProblemsContainer"></div>
+
+      <!-- Modal Footer with XP Completion Button -->
+      <div class="p-4 border-t border-white/10 bg-white/[0.02] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-400">
+        <span class="text-center sm:text-left">Set de 5 probleme specifice programei școlare oficiale.</span>
+        <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+          <button onclick="markWorksheetCompleted()" id="btnMarkWsCompleted" 
+                  class="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-black font-bold transition flex items-center gap-1.5 shadow-lg">
+            <i class="fa-solid fa-circle-check"></i> <span>Rezolvat (+100 XP)</span>
+          </button>
+          <button onclick="closeWorksheetModal()" class="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold transition">
+            Închide
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  
+  
+  <!-- ================= MODAL: AUTENTIFICARE & ÎNREGISTRARE (SIGN IN / SIGN UP) ================= -->
+  <div id="authModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-md p-4 sm:p-6 flex items-center justify-center animate-fadeIn">
+    <div class="themed-surface rounded-3xl w-full max-w-md border border-white/15 overflow-hidden shadow-2xl transition-all">
+      
+      <!-- Modal Tabs: Autentificare vs Înregistrare -->
+      <div class="grid grid-cols-2 border-b border-white/10 text-xs font-bold bg-white/[0.02]">
+        <button onclick="switchAuthTab('signin')" id="tabBtnSignIn" class="py-3.5 text-center transition flex items-center justify-center gap-2 themed-btn text-black font-black shadow-sm">
+          <i class="fa-solid fa-right-to-bracket"></i> <span>Autentificare</span>
+        </button>
+        <button onclick="switchAuthTab('signup')" id="tabBtnSignUp" class="py-3.5 text-center transition flex items-center justify-center gap-2 text-gray-400 hover:text-white">
+          <i class="fa-solid fa-user-plus"></i> <span>Cont Nou</span>
+        </button>
+      </div>
+
+      <!-- Close Button Corner -->
+      <div class="relative">
+        <button onclick="closeAuthModal()" class="absolute right-4 top-3 w-8 h-8 rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white flex items-center justify-center transition z-10">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <!-- FORM 1: AUTENTIFICARE (SIGN IN) -->
+      <div id="authFormSignIn" class="p-6 sm:p-7 space-y-5">
+        <div>
+          <div class="flex items-center justify-between">
+            <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-sky-500/15 text-sky-300 border border-sky-500/30">
+              <i class="fa-solid fa-shield-halved"></i> Cont MateHub
+            </div>
+            <div id="supabaseConnectionStatusBadge" class="text-[10px] font-semibold text-gray-400 flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span>Supabase Cloud Ready</span>
+            </div>
+          </div>
+          <h3 class="text-xl sm:text-2xl font-black text-white mt-1.5">Bine ai revenit!</h3>
+          <p class="text-xs text-gray-400 mt-1">Conectează-te pentru a-ți sincroniza punctele XP, streak-ul și lecțiile parcurse.</p>
+        </div>
+
+        <!-- Alert Error Message -->
+        <div id="signInErrorAlert" class="hidden p-3 rounded-xl bg-rose-500/20 border border-rose-500/40 text-rose-200 text-xs flex items-center gap-2 animate-shake">
+          <i class="fa-solid fa-circle-exclamation text-rose-400 text-sm"></i>
+          <span id="signInErrorText">Email sau parolă incorectă.</span>
+        </div>
+
+        <form onsubmit="handleSignInSubmit(event)" class="space-y-4">
+          <!-- Email Field -->
+          <div class="space-y-1.5">
+            <label class="text-[11px] font-bold uppercase tracking-wider text-gray-300 flex items-center gap-1.5">
+              <i class="fa-regular fa-envelope text-gray-400"></i> Adresă Email
+            </label>
+            <input type="email" id="signInEmail" required placeholder="elev@exemplu.ro" 
+                   class="w-full px-3.5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 text-xs focus:outline-none focus:border-sky-400 focus:ring-1 focus:ring-sky-400 transition">
+          </div>
+
+          <!-- Password Field -->
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between">
+              <label class="text-[11px] font-bold uppercase tracking-wider text-gray-300 flex items-center gap-1.5">
+                <i class="fa-solid fa-lock text-gray-400"></i> Parolă
+              </label>
+              <button type="button" onclick="togglePasswordVisibility('signInPassword', this)" class="text-[10px] text-gray-400 hover:text-white transition">
+                <i class="fa-regular fa-eye"></i> Arată
+              </button>
+            </div>
+            <input type="password" id="signInPassword" required placeholder="••••••••" 
+                   class="w-full px-3.5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 text-xs focus:outline-none focus:border-sky-400 focus:ring-1 focus:ring-sky-400 transition">
+          </div>
+
+          <div class="flex items-center justify-between text-xs text-gray-400 pt-1">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" id="signInRemember" checked class="rounded bg-white/10 border-white/20 text-sky-500 focus:ring-0">
+              <span class="text-[11px]">Ține-mă minte</span>
+            </label>
+            <a href="javascript:showDemoCredentials()" class="text-[11px] text-sky-400 hover:text-sky-300 transition">Cont Demo Rapid?</a>
+          </div>
+
+          <!-- Submit Button -->
+          <button type="submit" class="w-full py-3 rounded-xl themed-btn text-black font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg hover:brightness-110 transition">
+            <i class="fa-solid fa-right-to-bracket"></i> <span>Conectează-te în Cont</span>
+          </button>
+        </form>
+
+        <div class="text-center pt-2 border-t border-white/5 text-xs text-gray-400">
+          Nu ai un cont încă? 
+          <button onclick="switchAuthTab('signup')" class="text-sky-400 hover:text-sky-300 font-bold ml-1 transition">
+            Înregistrează-te gratuit
+          </button>
+        </div>
+      </div>
+
+      <!-- FORM 2: ÎNREGISTRARE (SIGN UP) -->
+      <div id="authFormSignUp" class="hidden p-6 sm:p-7 space-y-5">
+        <div>
+          <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+            <i class="fa-solid fa-gift"></i> +100 XP Bonus de Bun Venit
+          </div>
+          <h3 class="text-xl sm:text-2xl font-black text-white mt-1.5">Creează Contul Tău</h3>
+          <p class="text-xs text-gray-400 mt-1">Înscrie-te gratuit pentru a-ți salva progresul la Evaluare Națională sau Bacalaureat!</p>
+        </div>
+
+        <!-- Alert Error Message -->
+        <div id="signUpErrorAlert" class="hidden p-3 rounded-xl bg-rose-500/20 border border-rose-500/40 text-rose-200 text-xs flex items-center gap-2 animate-shake">
+          <i class="fa-solid fa-circle-exclamation text-rose-400 text-sm"></i>
+          <span id="signUpErrorText">Te rugăm să completezi toate câmpurile.</span>
+        </div>
+
+        <form onsubmit="handleSignUpSubmit(event)" class="space-y-3.5">
+          <!-- Full Name -->
+          <div class="space-y-1">
+            <label class="text-[11px] font-bold uppercase tracking-wider text-gray-300 flex items-center gap-1.5">
+              <i class="fa-regular fa-user text-gray-400"></i> Nume & Prenume / Pseudonim
+            </label>
+            <input type="text" id="signUpName" required placeholder="ex: Andrei Popescu" 
+                   class="w-full px-3.5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 text-xs focus:outline-none focus:border-sky-400 focus:ring-1 focus:ring-sky-400 transition">
+          </div>
+
+          <!-- Grade Level Selector -->
+          <div class="space-y-1">
+            <label class="text-[11px] font-bold uppercase tracking-wider text-gray-300 flex items-center gap-1.5">
+              <i class="fa-solid fa-graduation-cap text-gray-400"></i> Clasa Curentă
+            </label>
+            <select id="signUpGrade" class="w-full px-3.5 py-2.5 rounded-xl bg-[#14171f] border border-white/10 text-white text-xs focus:outline-none focus:border-sky-400 focus:ring-1 focus:ring-sky-400 transition">
+              <option value="Clasa a VIII-a (Evaluare Națională)">Clasa a VIII-a (Evaluare Națională)</option>
+              <option value="Clasa a VII-a">Clasa a VII-a</option>
+              <option value="Clasa a VI-a">Clasa a VI-a</option>
+              <option value="Clasa a V-a">Clasa a V-a</option>
+              <option value="Clasa a XII-a (Bacalaureat)">Clasa a XII-a (Bacalaureat)</option>
+              <option value="Clasa a XI-a">Clasa a XI-a</option>
+              <option value="Clasa a X-a">Clasa a X-a</option>
+              <option value="Clasa a IX-a">Clasa a IX-a</option>
+            </select>
+          </div>
+
+          <!-- Email Field -->
+          <div class="space-y-1">
+            <label class="text-[11px] font-bold uppercase tracking-wider text-gray-300 flex items-center gap-1.5">
+              <i class="fa-regular fa-envelope text-gray-400"></i> Adresă Email
+            </label>
+            <input type="email" id="signUpEmail" required placeholder="elev@exemplu.ro" 
+                   class="w-full px-3.5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 text-xs focus:outline-none focus:border-sky-400 focus:ring-1 focus:ring-sky-400 transition">
+          </div>
+
+          <!-- Password & Confirm Password Grid -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="space-y-1">
+              <label class="text-[11px] font-bold uppercase tracking-wider text-gray-300">Parolă</label>
+              <input type="password" id="signUpPassword" required minlength="6" placeholder="Min. 6 caractere" 
+                     class="w-full px-3.5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 text-xs focus:outline-none focus:border-sky-400 focus:ring-1 focus:ring-sky-400 transition">
+            </div>
+            <div class="space-y-1">
+              <label class="text-[11px] font-bold uppercase tracking-wider text-gray-300">Confirmă Parola</label>
+              <input type="password" id="signUpConfirmPassword" required minlength="6" placeholder="Repetă parola" 
+                     class="w-full px-3.5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 text-xs focus:outline-none focus:border-sky-400 focus:ring-1 focus:ring-sky-400 transition">
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <button type="submit" class="w-full py-3 rounded-xl themed-btn text-black font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg hover:brightness-110 transition mt-2">
+            <i class="fa-solid fa-user-plus"></i> <span>Creează Contul Meu (+100 XP)</span>
+          </button>
+        </form>
+
+        <div class="text-center pt-2 border-t border-white/5 text-xs text-gray-400">
+          Ai deja un cont creat? 
+          <button onclick="switchAuthTab('signin')" class="text-sky-400 hover:text-sky-300 font-bold ml-1 transition">
+            Autentifică-te
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================= MODAL: PROFIL & REALIZĂRI (XP, STREAK, INSIGNE) ================= -->
+  <div id="profileModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-md p-4 sm:p-6 flex items-center justify-center animate-fadeIn">
+    <div class="themed-surface rounded-3xl w-full max-w-3xl border border-white/15 max-h-[92vh] flex flex-col overflow-hidden shadow-2xl">
+      
+      <!-- Modal Header: User Level & Rank -->
+      <div class="p-6 border-b border-white/10 bg-gradient-to-r from-amber-500/10 via-purple-500/10 to-sky-500/10 flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <div class="w-14 h-14 rounded-2xl bg-black/40 border border-amber-400/40 flex items-center justify-center text-3xl shadow-inner" id="modalUserEmblem">
+            🌱
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span id="modalUserRank" class="text-xl sm:text-2xl font-black text-white">Nivelul 1 - Începător la Mate</span>
+              <span id="modalLevelPill" class="text-xs px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30 font-bold">Niv. 1</span>
+            </div>
+            <p class="text-xs text-gray-300 mt-0.5">Continuă să înveți pentru a debloca noi ranguri și insigne de maestru!</p>
+          </div>
+        </div>
+
+        <button onclick="closeProfileModal()" class="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white flex items-center justify-center transition">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body (XP Progress, Streak Tracker, Badges Grid) -->
+      <div class="p-6 overflow-y-auto space-y-6 flex-1">
+        
+        <!-- Level Progress Bar -->
+        <div class="p-5 rounded-2xl bg-white/[0.02] border border-white/10 space-y-3">
+          <div class="flex items-center justify-between text-xs">
+            <span class="font-bold text-gray-300">Progres Nivel Următor</span>
+            <span id="modalXpRatio" class="font-mono font-bold text-amber-400">0 / 200 XP</span>
+          </div>
+          <div class="w-full h-3 bg-black/40 rounded-full overflow-hidden p-0.5 border border-white/10">
+            <div id="modalXpProgressBar" class="h-full rounded-full themed-btn transition-all duration-500" style="width: 0%;"></div>
+          </div>
+          <div class="flex items-center justify-between text-[11px] text-gray-400">
+            <span id="modalCurrentLevelName">Nivel 1</span>
+            <span id="modalNextLevelName">Următorul: Nivel 2 (200 XP)</span>
+          </div>
+        </div>
+
+        <!-- Streak & Lifetime Statistics Grid -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div class="p-4 rounded-2xl bg-orange-500/10 border border-orange-500/20 text-center space-y-1">
+            <div class="text-2xl">🔥</div>
+            <div id="modalStreakCount" class="text-xl font-black text-orange-400">1 zi</div>
+            <div class="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Streak Curent</div>
+          </div>
+          <div class="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-center space-y-1">
+            <div class="text-2xl">⚡</div>
+            <div id="modalTotalXp" class="text-xl font-black text-amber-300">0 XP</div>
+            <div class="text-[10px] uppercase font-bold text-gray-400 tracking-wider">XP Total</div>
+          </div>
+          <div class="p-4 rounded-2xl bg-sky-500/10 border border-sky-500/20 text-center space-y-1">
+            <div class="text-2xl">📚</div>
+            <div id="modalLessonsDone" class="text-xl font-black text-sky-400">0</div>
+            <div class="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Lecții Învățate</div>
+          </div>
+          <div class="p-4 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-center space-y-1">
+            <div class="text-2xl">🏆</div>
+            <div id="modalExamsDone" class="text-xl font-black text-purple-400">0</div>
+            <div class="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Simulări Examen</div>
+          </div>
+        </div>
+
+        <!-- Badges & Achievements Section -->
+        <div class="space-y-4">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <i class="fa-solid fa-award text-yellow-400"></i>
+              <h3 class="text-base font-bold text-white">Insigne & Realizări</h3>
+            </div>
+            <span id="modalBadgesRatio" class="text-xs px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-gray-300 font-semibold">0 / 9 Deblocate</span>
+          </div>
+
+          <div id="modalBadgesGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+            <!-- Dynamically populated badges -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="p-4 border-t border-white/10 bg-white/[0.02] flex items-center justify-between text-xs text-gray-400">
+        <span>Fiecare lecție, fișă sau simulare îți aduce XP și îți menține streak-ul activ!</span>
+        <button onclick="closeProfileModal()" class="px-5 py-2 rounded-xl themed-btn text-black font-bold transition">
+          Super, continuă!
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================= FLOATING XP TOAST NOTIFICATION ================= -->
+  <div id="xpToast" class="fixed bottom-6 right-6 z-50 pointer-events-none transform translate-y-12 opacity-0 transition-all duration-300 flex items-center gap-3 px-4 py-3 rounded-2xl glass-card border border-amber-400/40 shadow-2xl text-white">
+    <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-xl font-black shadow-inner">
+      ⚡
+    </div>
+    <div>
+      <div id="xpToastAmount" class="text-sm font-black text-amber-300">+50 XP</div>
+      <div id="xpToastReason" class="text-[11px] text-gray-300">Lecție finalizată!</div>
+    </div>
+  </div>
+
+  <!-- ================= CELEBRATION LEVEL UP MODAL ================= -->
+  <div id="levelUpModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md p-4 flex items-center justify-center animate-fadeIn">
+    <div class="themed-surface rounded-3xl p-8 max-w-sm w-full border border-amber-400/50 text-center space-y-4 shadow-2xl">
+      <div class="text-5xl animate-bounce" id="lvlUpEmblem">🎉</div>
+      <span class="text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30">NIVEL NOU ATINS!</span>
+      <h3 id="lvlUpTitle" class="text-2xl font-black text-white">Ucenic Algebric</h3>
+      <p id="lvlUpDesc" class="text-xs text-gray-300 leading-relaxed">Felicitări! Ai acumulat suficient XP pentru a urca în rangul următor. Continuă la fel!</p>
+      <button onclick="closeLevelUpModal()" class="w-full py-2.5 rounded-xl themed-btn text-black font-bold text-sm shadow">
+        Continuă Aventura!
+      </button>
+    </div>
+  </div>
+
+  <!-- ================= FOOTER ================= -->
+  <footer class="mt-20 border-t border-white/10 py-10" style="background-color: var(--nav-bg);">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-6 text-xs text-gray-400">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm themed-btn">
+          <i class="fa-solid fa-shapes"></i>
+        </div>
+        <div>
+          <p class="font-bold text-white text-sm">MateHub România</p>
+          <p>Creat pentru elevii și profesorii din România • 100% Gratuit & Open-Source</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-6">
+        <a href="javascript:selectLevel('gimnaziu')" class="hover:text-white transition">Gimnaziu V–VIII</a>
+        <a href="javascript:selectLevel('liceu')" class="hover:text-white transition">Liceu IX–XII</a>
+        <a href="javascript:navigateTo('simulations')" class="hover:text-white transition">Simulări Examen</a>
+        <span class="text-gray-600">|</span>
+        <span>Suport KaTeX & Tailwind</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ================= MODULAR JAVASCRIPT & OOP SERVICES ================= -->
+  <!-- 1. Data Modules -->
+  <script src="js/data/curriculum.js"></script>
+  <script src="js/data/worksheets.js"></script>
+  <script src="js/data/simulations.js"></script>
+
+  <!-- 2. OOP Services & Managers -->
+  <script src="js/services/ThemeManager.js"></script>
+  <script src="js/services/AuthService.js"></script>
+  <script src="js/services/GamificationManager.js"></script>
+  <script src="js/ui/UIManager.js"></script>
+
+  <!-- 3. Application Orchestrator & Global Event Bridge -->
+  <script src="js/app.js"></script>
+
+</body>
+</html>
